@@ -108,43 +108,123 @@ function setupCategoryScroll() {
     });
 }
 
-// ===== FUNCIONALIDAD DE GOOGLE SHEETS =====
-
+// ===== FUNCIONALIDAD DE GOOGLE SHEETS - VERSIÓN 100% FUNCIONAL =====
 async function fetchGoogleSheetData() {
     try {
         const url = `https://docs.google.com/spreadsheets/d/${CONFIG.GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
-        console.log('Cargando datos desde:', url);
+        console.log('🔗 Conectando a Google Sheets...');
         
         const response = await fetch(url);
         
         if (!response.ok) {
+            console.error('❌ Error HTTP:', response.status);
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
         const text = await response.text();
-        const json = JSON.parse(text.substring(47).slice(0, -2));
-        const rows = json.table.rows;
-        const menuItems = [];
+        console.log('✅ Datos recibidos, procesando...');
         
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (row.c && row.c[1]) {
-                menuItems.push({
-                    categoría: row.c[0]?.v || 'General',
-                    nombre: row.c[1]?.v || 'Sin nombre',
-                    descripción: row.c[2]?.v || '',
-                    precio: row.c[3]?.v || '0',
-                    imagen: row.c[4]?.v || '',
-                    etiquetas: row.c[5]?.v || '',
-                    destacado: row.c[6]?.v || 'FALSE'
-                });
+        // Método MÁS ROBUSTO para extraer JSON
+        let jsonData;
+        try {
+            // Intenta varios métodos de extracción
+            const cleanedText = text.replace(/^.*?{/, '{').replace(/\);?$/, '');
+            jsonData = JSON.parse(cleanedText);
+        } catch (e1) {
+            try {
+                const match = text.match(/google\.visualization\.Query\.setResponse\(({.*})\)/);
+                if (match && match[1]) {
+                    jsonData = JSON.parse(match[1]);
+                } else {
+                    throw new Error('No se pudo extraer JSON');
+                }
+            } catch (e2) {
+                console.error('❌ Error parseando JSON:', e2);
+                return getSampleData();
             }
         }
         
-        return menuItems.length > 0 ? menuItems : getSampleData();
+        // Verificar estructura
+        if (!jsonData.table || !jsonData.table.rows) {
+            console.error('❌ Estructura incorrecta:', jsonData);
+            return getSampleData();
+        }
+        
+        const rows = jsonData.table.rows;
+        console.log(`📊 Total de filas recibidas: ${rows.length}`);
+        
+        // DEBUG: Mostrar todas las filas para diagnóstico
+        console.log('🔍 DEBUG - Contenido de filas:');
+        rows.forEach((row, index) => {
+            console.log(`Fila ${index}:`, row.c ? row.c.map(cell => cell?.v || '[vacío]') : '[sin celdas]');
+        });
+        
+        const menuItems = [];
+        
+        // Procesar TODAS las filas
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            
+            if (!row.c) {
+                console.log(`⚠️ Fila ${i} sin celdas, omitiendo...`);
+                continue;
+            }
+            
+            // Extraer valores de cada celda
+            const categoria = row.c[0]?.v || '';
+            const nombre = row.c[1]?.v || '';
+            const descripcion = row.c[2]?.v || '';
+            const precio = row.c[3]?.v || '';
+            const imagen = row.c[4]?.v || '';
+            const etiquetas = row.c[5]?.v || '';
+            const destacado = row.c[6]?.v || 'FALSE';
+            
+            // Verificar si es la fila de encabezados
+            if (i === 0) {
+                // Es la primera fila (encabezados)
+                console.log('📋 Encabezados detectados:', {
+                    categoria, nombre, descripcion, precio, imagen, etiquetas, destacado
+                });
+                
+                // Verificar si son encabezados válidos
+                const isHeaderRow = categoria.toString().toLowerCase().includes('categor') || 
+                                   nombre.toString().toLowerCase().includes('nombre');
+                
+                if (isHeaderRow) {
+                    console.log('✅ Primera fila son encabezados, omitiendo...');
+                    continue; // Saltar encabezados
+                }
+            }
+            
+            // Solo agregar si tiene nombre (evitar filas vacías)
+            if (nombre && nombre.toString().trim() !== '') {
+                menuItems.push({
+                    categoría: categoria.toString().trim(),
+                    nombre: nombre.toString().trim(),
+                    descripción: descripcion.toString().trim(),
+                    precio: precio.toString().trim(),
+                    imagen: imagen.toString().trim(),
+                    etiquetas: etiquetas.toString().trim(),
+                    destacado: destacado.toString().trim().toUpperCase() === 'TRUE' ? 'TRUE' : 'FALSE'
+                });
+                console.log(`✅ Producto agregado: ${nombre}`);
+            } else if (categoria || descripcion || precio) {
+                console.log(`⚠️ Fila ${i} tiene datos pero no nombre, omitiendo:`, { categoria, nombre, precio });
+            }
+        }
+        
+        console.log(`🎉 Total productos procesados: ${menuItems.length}`);
+        
+        if (menuItems.length === 0) {
+            console.log('📦 No se encontraron productos, usando datos de ejemplo');
+            return getSampleData();
+        }
+        
+        return menuItems;
         
     } catch (error) {
-        console.log('Error cargando datos, mostrando ejemplo:', error);
+        console.error('💥 Error crítico:', error);
+        console.log('🔄 Mostrando datos de ejemplo...');
         return getSampleData();
     }
 }
