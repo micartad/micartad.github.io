@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Digital | Restaurante</title>
+    <meta name="description" content="Menú digital interactivo con actualización en tiempo real">
+    
+    <!-- Favicon circular -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23FF6B35%22/><text x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2250%22 fill=%22white%22>🍽️</text></svg>">
+    
+    <!-- Logo circular para dispositivos Apple -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23FF6B35%22/><text x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2250%22 fill=%22white%22>🍽️</text></svg>">
+    
+    <!-- Fuentes modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Iconos Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Nuestros estilos -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="container">
+            <div class="logo-section">
+                <!-- Logo circular -->
+                <div class="logo-circle">
+                    <span class="logo-icon">🍽️</span>
+                </div>
+                <div class="logo-text">
+                    <h1 class="restaurant-name" id="restaurantName">SABORES & AROMAS</h1>
+                    <p class="restaurant-slogan" id="restaurantSlogan">Cocina de autor con ingredientes de temporada</p>
+                </div>
+            </div>
+            <div class="contact-info" aria-label="Información de contacto">
+                <p><i class="fas fa-clock" aria-hidden="true"></i> <span id="schedule">Martes a Domingo: 13:00-23:00</span></p>
+                <p><i class="fas fa-phone" aria-hidden="true"></i> <span id="phone">+54 387 234 56 78</span></p>
+                <p><i class="fas fa-map-marker-alt" aria-hidden="true"></i> <span id="address">Av San Martín, s/n · Salta</span></p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación de categorías -->
+    <nav class="categories-nav" aria-label="Filtro de categorías">
+        <div class="container">
+            <div class="categories" id="categoriesList" role="tablist">
+                <!-- Categorías se cargan dinámicamente -->
+                <span class="category-filter active" data-category="all" role="tab" tabindex="0" aria-selected="true">Todos los platos</span>
+            </div>
+            <div class="search-box">
+                <input type="text" 
+                       id="searchInput" 
+                       placeholder="Buscar plato o ingrediente..." 
+                       aria-label="Buscar en el menú">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content" id="main-content">
+        <div class="container">
+            <!-- Sección de bienvenida -->
+            <section class="welcome-section" aria-labelledby="welcomeTitle">
+                <div class="welcome-message">
+                    <p class="welcome-text">Todos nuestros platos se preparan al momento con ingredientes frescos de temporada. 
+                    <span class="highlight">Menú actualizado diariamente</span>.</p>
+                </div>
+            </section>
+
+            <!-- Contenedor del menú -->
+            <div id="menuContainer" role="region" aria-label="Menú del restaurante">
+                <div class="loading" aria-live="polite" aria-busy="true">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <p>Cargando nuestro delicioso menú...</p>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <section class="additional-info" aria-label="Información adicional">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <i class="fas fa-leaf" aria-hidden="true"></i>
+                        <h3>Opciones Vegetarianas</h3>
+                        <p>Platos marcados con etiqueta vegetariana o vegana</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-pepper-hot" aria-hidden="true"></i>
+                        <h3>Nivel de Picante</h3>
+                        <p>Los platos picantes están marcados adecuadamente</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        <h3>Recomendaciones</h3>
+                        <p>Los platos destacados son nuestras especialidades</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-section">
+                <h3><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Ubicación</h3>
+                <p id="addressFooter">Av San Martín, s/n<br> 4400 Salta</p>
+                <p class="metro-info"><i class="fas fa-subway" aria-hidden="true"></i> Estación: Terminal (Salta)</p>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-envelope" aria-hidden="true"></i> Contacto</h3>
+                <p id="email">reservas@saboresyaromas.com</p>
+                <p id="phoneFooter">+54 387 234 56 78</p>
+                <p><i class="fas fa-wheelchair" aria-hidden="true"></i> Accesible para sillas de ruedas</p>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-share-alt" aria-hidden="true"></i> Síguenos</h3>
+                <div class="social-icons">
+                    <a href="#" class="social-icon" aria-label="Instagram">
+                        <i class="fab fa-instagram" aria-hidden="true"></i>
+                    </a>
+                    <a href="#" class="social-icon" aria-label="Facebook">
+                        <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                    </a>
+                    <a href="#" class="social-icon" aria-label="TripAdvisor">
+                        <i class="fab fa-tripadvisor" aria-hidden="true"></i>
+                    </a>
+                    <a href="#" class="social-icon" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <p class="social-text">Comparte tu experiencia con #SaboresYAromas</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2026 Sabores & Aromas. Todos los derechos reservados.</p>
+            <p class="update-notice" id="lastUpdate" aria-live="polite">Última actualización: <span id="updateTime">--:--</span></p>
+            <p class="tech-note">Tu Carta digital - 3875048697</p>
+        </div>
+    </footer>
+
+    <!-- Botón flotante para recargar -->
+    <button class="floating-btn" 
+            id="refreshBtn" 
+            title="Actualizar menú" 
+            aria-label="Actualizar contenido del menú">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
