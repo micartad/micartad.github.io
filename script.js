@@ -1,3 +1,70 @@
+// Inicializar
+function init() {
+    loadAndDisplayData();
+    
+    // Configurar scroll optimizado
+    window.addEventListener('scroll', throttle(handleScroll, 100));
+    
+    // Configurar búsqueda
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (!query) {
+                filterByCategory('all');
+                document.querySelectorAll('.category-filter').forEach(btn => {
+                    if (btn.getAttribute('data-category') === 'all') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                return;
+            }
+            
+            document.querySelectorAll('.category-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.menu-item').forEach(item => {
+                const name = item.querySelector('.item-name').textContent.toLowerCase();
+                const description = item.querySelector('.item-description').textContent.toLowerCase();
+                const parentSection = item.closest('.category-section');
+                
+                if (name.includes(query) || description.includes(query)) {
+                    item.style.display = 'flex';
+                    if (parentSection) {
+                        parentSection.style.display = 'block';
+                        parentSection.querySelectorAll('.menu-item').forEach(sibling => {
+                            if (sibling !== item) sibling.style.display = 'flex';
+                        });
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            document.querySelectorAll('.category-filter').forEach(btn => {
+                if (btn.getAttribute('data-category') === 'all') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        });
+    }
+    
+    // Botón de refrescar
+    if (elements.refreshBtn) {
+        elements.refreshBtn.addEventListener('click', () => {
+            loadAndDisplayData();
+            elements.refreshBtn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                elements.refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            }, 1000);
+        });
+    }
+}
 // CONFIGURACIÓN
 const CONFIG = {
     GOOGLE_SHEET_ID: '1vZncoCQHT58f0FOgJRVIxb4cRBxc8xvQ4XfOQ4VK4rM',
@@ -669,25 +736,6 @@ function renderMenuItem(item) {
     `;
 }
 
-// En la función init(), agregar:
-function init() {
-    loadAndDisplayData();
-    
-    // Configurar scroll
-    window.addEventListener('scroll', () => {
-        requestAnimationFrame(handleScroll);
-    });
-    
-    // Inicializar sistema de pedidos
-    inicializarSistemaPedidos();
-    
-    // Resto del código...
-}
-function formatPrice(price) {
-    if (!price) return '$ --';
-    const numPrice = parseFloat(price);
-    return isNaN(numPrice) ? '$ --' : `$ ${parseInt(numPrice).toLocaleString('es-AR')}`;
-}
 
 // Variables globales
 let menuData = [];
@@ -1110,10 +1158,10 @@ function renderMenuItem(item) {
     const imageUrl = item.imagen || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop';
     
     return `
-        <article class="menu-item">
+        <article class="menu-item" data-product="${item.nombre}" data-price="${item.precio}">
             <div class="item-image-container">
                 <img src="${imageUrl}" alt="${item.nombre}" class="item-image" loading="lazy">
-                ${isFeatured ? '<span class="item-badge">Destacado</span>' : ''}
+                ${isFeatured ? '<span class="item-badge">⭐ Destacado</span>' : ''}
             </div>
             <div class="item-content">
                 <div class="item-header">
@@ -1122,6 +1170,21 @@ function renderMenuItem(item) {
                 </div>
                 <p class="item-description">${item.descripción || ''}</p>
                 ${tagsHtml ? `<div class="item-tags">${tagsHtml}</div>` : ''}
+                
+                <!-- Botón para agregar al carrito -->
+                <button class="agregar-carrito-btn" 
+                        data-producto="${item.nombre}" 
+                        data-precio="${item.precio}">
+                    <i class="fas fa-cart-plus"></i> Agregar al carrito
+                </button>
+                
+                <!-- Botón directo WhatsApp (opcional) -->
+                <a href="https://wa.me/${CONFIG.RESTAURANT_INFO.whatsapp.number}?text=${encodeURIComponent(`¡Hola! Quiero pedir: ${item.nombre} - $${item.precio}`)}" 
+                   target="_blank" 
+                   class="whatsapp-btn" 
+                   style="margin-top: 8px; display: inline-block; width: 100%; text-align: center; padding: 8px; background: #25D366; color: white; border-radius: 5px; text-decoration: none;">
+                    <i class="fab fa-whatsapp"></i> Pedir directo
+                </a>
             </div>
         </article>
     `;
@@ -1209,73 +1272,7 @@ async function loadAndDisplayData() {
     }
 }
 
-// Inicializar
-function init() {
-    loadAndDisplayData();
-    
-    // Configurar scroll optimizado
-    window.addEventListener('scroll', throttle(handleScroll, 100));
-    
-    // Configurar búsqueda
-    if (elements.searchInput) {
-        elements.searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            
-            if (!query) {
-                filterByCategory('all');
-                document.querySelectorAll('.category-filter').forEach(btn => {
-                    if (btn.getAttribute('data-category') === 'all') {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-                return;
-            }
-            
-            document.querySelectorAll('.category-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            document.querySelectorAll('.menu-item').forEach(item => {
-                const name = item.querySelector('.item-name').textContent.toLowerCase();
-                const description = item.querySelector('.item-description').textContent.toLowerCase();
-                const parentSection = item.closest('.category-section');
-                
-                if (name.includes(query) || description.includes(query)) {
-                    item.style.display = 'flex';
-                    if (parentSection) {
-                        parentSection.style.display = 'block';
-                        parentSection.querySelectorAll('.menu-item').forEach(sibling => {
-                            if (sibling !== item) sibling.style.display = 'flex';
-                        });
-                    }
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-            
-            document.querySelectorAll('.category-filter').forEach(btn => {
-                if (btn.getAttribute('data-category') === 'all') {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        });
-    }
-    
-    // Botón de refrescar
-    if (elements.refreshBtn) {
-        elements.refreshBtn.addEventListener('click', () => {
-            loadAndDisplayData();
-            elements.refreshBtn.innerHTML = '<i class="fas fa-check"></i>';
-            setTimeout(() => {
-                elements.refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
-            }, 1000);
-        });
-    }
-}
+
 
 // Iniciar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', init);
